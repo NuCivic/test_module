@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function test_module_menu() {
+  $items['awesomepage'] = array(
+    'title' => 'This page is the best',
+    'page callback' => 'test_module_callback',
+    'page arguments' => array(),
+    'access arguments' => array('View published content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ *
+ */
+function test_module_callback() {
+  $node = node_load(1);
+  if (test_module_node_is_enthusiastic($node->title)) {
+    return $node->title;
+  }
+  else {
+    return "We're still happy";
+  }
+}
+
+/**
+ *
+ */
+function test_module_node_is_enthusiastic($title) {
+  include 'src/TestModuleValidate.php';
+  $validator = new TestModuleValidate($title);
+  if ($validator->titleIsEnthusastic($title)) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
