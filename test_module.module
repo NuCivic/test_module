@@ -16,6 +16,104 @@ function test_module_menu() {
 }
 
 /**
+ * Implements hook_block_info().
+ */
+function test_module_block_info() {
+  $blocks['local_stats'] = array(
+    'info' => t('Local Site Stats'),
+  );
+  $blocks['drupal_org_stats'] = array(
+    'info' => t('Drupal.org Site Stats'),
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function test_module_block_view($delta) {
+  $block = array();
+
+  switch ($delta) {
+    case 'local_stats':
+      $block['subject'] = t('Local Site Stats');
+      $block['content'] = test_module_local_site_stats();
+      break;
+
+    case 'drupal_org_stats':
+      $block['subject'] = t('Drupal.org Site Stats');
+      $block['content'] = test_module_drupal_org_site_stats();
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Provides stats for drupal.org.
+ */
+function test_module_drupal_org_site_stats() {
+  $node_count = test_module_local_drupal_org_node_count();
+  $term_count = test_module_local_drupal_org_term_count();
+  return test_module_block_prepare($node_count, $term_count);
+}
+
+/**
+ * Provides stats for local site.
+ */
+function test_module_local_site_stats() {
+  $node_count = test_module_local_node_count();
+  $term_count = test_module_local_term_count();
+  return test_module_block_prepare($node_count, $term_count);
+}
+
+/**
+ * Counts terms from drupal.org.
+ */
+function test_module_local_drupal_org_term_count() {
+  $request = drupal_http_request('https://www.drupal.org/api-d7/taxonomy_term.json?limit=1');
+  $data = drupal_json_decode($request->data);
+  $data = explode('page=', $data['last']);
+  return $data[1];
+}
+
+/**
+ * Counts nodes from drupal.org.
+ */
+function test_module_local_drupal_org_node_count() {
+  $request = drupal_http_request('https://www.drupal.org/api-d7/node.json?limit=1');
+  $data = drupal_json_decode($request->data);
+  $data = explode('page=', $data['last']);
+  return $data[1];
+}
+
+/**
+ * Counts local nodes.
+ */
+function test_module_local_node_count() {
+  return db_query("SELECT count(nid) from {node}")->fetchField();
+}
+
+/**
+ * Counts local terms.
+ */
+function test_module_local_term_count() {
+  return db_query("SELECT count(tid) from {taxonomy_term_data}")->fetchField();
+}
+
+/**
+ * Prepares output for stats blocks.
+ */
+function test_module_block_prepare($node_count, $term_count) {
+  $items = array(
+    t('%node_count nodes', array('%node_count' => $node_count)),
+    t('%term_count terms', array('%term_count' => $term_count))
+  );
+  return theme('item_list', array('items' => $items));
+}
+
+
+
+/**
  *
  */
 function test_module_callback() {
