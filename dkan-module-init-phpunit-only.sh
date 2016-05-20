@@ -1,3 +1,5 @@
+## DKAN Init PHPUnit Only.
+## v0.1.0
 
 # Name of the current module.
 DKAN_MODULE="dkan_health_status"
